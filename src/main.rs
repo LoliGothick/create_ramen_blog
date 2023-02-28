@@ -9,15 +9,15 @@ fn command(slug: &str, title: &str, _cover: impl AsRef<Path>) -> anyhow::Result<
     let created_at = chrono::Utc::now();
     let template = format!(r#"
         ---
-        title: '${title}'
+        title: '{title}'
         excerpt: '#'
-        coverImage: '/assets/blog/${slug}/cover.jpg'
+        coverImage: '/assets/blog/{slug}/cover.jpg'
         date: '${created_at}'
         author:
           name: Mitama
           picture: '/assets/blog/authors/mitama.jpg'
         ogImage:
-          url: '/assets/blog/${slug}/cover.jpg'
+          url: '/assets/blog/{slug}/cover.jpg'
         ---
 
         ## お店の詳細
@@ -53,9 +53,9 @@ fn command(slug: &str, title: &str, _cover: impl AsRef<Path>) -> anyhow::Result<
         }
     }
 
-    let path= "./_posts/{slug}.md";
-    touch(path)?;
-    let mut file = File::create(path)?;
+    let path= format!("./_posts/{slug}.md");
+    touch(&path)?;
+    let mut file = File::create(&path)?;
     file.write_all(template.as_bytes())?;
 
     Ok(())
