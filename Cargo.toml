@@ -1,5 +1,5 @@
 [package]
-name = "create_ramen_blog"
+name = "create-ramen-blog"
 version = "0.1.0"
 edition = "2021"
 
