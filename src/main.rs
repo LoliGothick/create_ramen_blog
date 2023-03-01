@@ -13,7 +13,7 @@ fn command(slug: &str, title: &str, cover: impl AsRef<Path>) -> anyhow::Result<(
         title: '{title}'
         excerpt: '#'
         coverImage: '/assets/blog/{slug}/cover.jpg'
-        date: '${created_at}'
+        date: '{created_at}'
         author:
           name: Mitama
           picture: '/assets/blog/authors/mitama.jpg'
