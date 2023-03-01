@@ -1,14 +1,14 @@
-use anyhow::{bail};
+use anyhow::bail;
 use clap::Parser;
-use std::fmt::Display;
+
 use std::fs::{File, OpenOptions};
-use std::io::{Read, Write};
+use std::io::Write;
 use std::path::Path;
 
 fn command(slug: &str, title: &str, cover: impl AsRef<Path>) -> anyhow::Result<()> {
     let created_at = chrono::Utc::now();
     let template = format!(
-        r#"
+        indoc::indoc! {r#"
         ---
         title: '{title}'
         excerpt: '#'
@@ -44,14 +44,16 @@ fn command(slug: &str, title: &str, cover: impl AsRef<Path>) -> anyhow::Result<(
         :::
         補足情報があれば書く
         :::
-
-    "#
+    "#},
+        title = title,
+        created_at = created_at,
+        slug = slug,
     );
 
-    fn touch(path: impl AsRef<Path> + Display) -> anyhow::Result<()> {
+    fn touch(path: impl AsRef<Path>) -> anyhow::Result<()> {
         match OpenOptions::new().create(true).write(true).open(&path) {
             Ok(_) => Ok(()),
-            Err(_e) => bail!("{path} is already exists"),
+            Err(e) => bail!("{e:?}"),
         }
     }
 
@@ -60,21 +62,17 @@ fn command(slug: &str, title: &str, cover: impl AsRef<Path>) -> anyhow::Result<(
     let mut post = File::create(&path)?;
     post.write_all(template.as_bytes())?;
 
-    let path = format!(
-        "./public/assets/blog/{slug}/{}",
-        cover
-            .as_ref()
-            .file_name()
-            .unwrap()
-            .to_string_lossy()
+    let cover_path = format!(
+        "./public/assets/blog/{slug}/cover.{}",
+        cover.as_ref().extension().unwrap().to_string_lossy()
     );
-    touch(&path)?;
+    let path = Path::new(cover_path.as_str());
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir)?;
+    }
 
-    let mut asset = File::create(&path)?;
-    let mut cover_image = File::open(cover)?;
-    let mut buffer = String::new();
-    cover_image.read_to_string(&mut buffer)?;
-    asset.write_all(buffer.as_bytes())?;
+    let cover_image = image::open(cover).unwrap();
+    cover_image.save(cover_path).unwrap();
 
     Ok(())
 }

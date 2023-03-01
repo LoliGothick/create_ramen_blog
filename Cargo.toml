@@ -1,5 +1,5 @@
 [package]
-name = "create-ramen-blog"
+name = "create-ramen-post"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,5 +10,6 @@ anyhow = "1.0.69"
 chrono = "0.4.23"
 chrono-tz = "0.8.1"
 clap = { version = "4.1.8", features = ["derive"] }
+image = "0.24.5"
 indoc = "2.0.0"
 itertools = "0.10.5"
