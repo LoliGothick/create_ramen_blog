@@ -68,9 +68,9 @@ fn command(slug: &str, title: &str, cover: impl AsRef<Path>) -> anyhow::Result<(
             .unwrap()
             .to_string_lossy()
     );
-    touch(path)?;
+    touch(&path)?;
 
-    let mut asset = File::create(&path);
+    let mut asset = File::create(&path)?;
     let mut cover_image = File::open(cover)?;
     let mut buffer = String::new();
     cover_image.read_to_string(&mut buffer)?;
