@@ -4,14 +4,15 @@ use clap::Parser;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::Path;
+use ulid::Ulid;
 
-fn command(slug: &str, title: &str, cover: impl AsRef<Path>) -> anyhow::Result<()> {
+fn command(slug: Ulid, title: &str, cover: impl AsRef<Path>) -> anyhow::Result<()> {
     let created_at = chrono::Utc::now();
     let template = format!(
         indoc::indoc! {r#"
         ---
         title: '{title}'
-        excerpt: '#'
+        excerpt: '{title} に行ってきました'
         coverImage: '/assets/blog/{slug}/cover.jpg'
         date: '{created_at}'
         author:
@@ -20,12 +21,6 @@ fn command(slug: &str, title: &str, cover: impl AsRef<Path>) -> anyhow::Result<(
         ogImage:
           url: '/assets/blog/{slug}/cover.jpg'
         ---
-
-        ## お店の詳細
-
-        :::
-        ここにお店の詳細を書く
-        :::
 
         ## 注文の詳細
 
@@ -37,6 +32,12 @@ fn command(slug: &str, title: &str, cover: impl AsRef<Path>) -> anyhow::Result<(
 
         :::
         ここにラーメンの写真を貼る
+        :::
+
+        ## お店の詳細
+
+        :::
+        ここにお店の詳細を書く
         :::
 
         ## 補足情報
@@ -81,9 +82,6 @@ fn command(slug: &str, title: &str, cover: impl AsRef<Path>) -> anyhow::Result<(
 #[command(author, version, about, long_about = None)]
 struct Args {
     #[arg(short, long)]
-    slug: String,
-
-    #[arg(short, long)]
     title: String,
 
     #[arg(short, long)]
@@ -93,7 +91,7 @@ struct Args {
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
-    command(&args.slug, &args.title, &args.cover)?;
+    command(Ulid::new(), &args.title, &args.cover)?;
 
     Ok(())
 }
