@@ -1,13 +1,14 @@
-use std::fmt::Display;
-use std::fs::{File, OpenOptions};
-use std::io::Write;
-use std::path::Path;
 use anyhow::{bail};
 use clap::Parser;
+use std::fmt::Display;
+use std::fs::{File, OpenOptions};
+use std::io::{Read, Write};
+use std::path::Path;
 
-fn command(slug: &str, title: &str, _cover: impl AsRef<Path>) -> anyhow::Result<()> {
+fn command(slug: &str, title: &str, cover: impl AsRef<Path>) -> anyhow::Result<()> {
     let created_at = chrono::Utc::now();
-    let template = format!(r#"
+    let template = format!(
+        r#"
         ---
         title: '{title}'
         excerpt: '#'
@@ -44,7 +45,8 @@ fn command(slug: &str, title: &str, _cover: impl AsRef<Path>) -> anyhow::Result<
         補足情報があれば書く
         :::
 
-    "#);
+    "#
+    );
 
     fn touch(path: impl AsRef<Path> + Display) -> anyhow::Result<()> {
         match OpenOptions::new().create(true).write(true).open(&path) {
@@ -53,10 +55,26 @@ fn command(slug: &str, title: &str, _cover: impl AsRef<Path>) -> anyhow::Result<
         }
     }
 
-    let path= format!("./_posts/{slug}.md");
+    let path = format!("./_posts/{slug}.md");
     touch(&path)?;
-    let mut file = File::create(&path)?;
-    file.write_all(template.as_bytes())?;
+    let mut post = File::create(&path)?;
+    post.write_all(template.as_bytes())?;
+
+    let path = format!(
+        "./public/assets/blog/{slug}/{}",
+        cover
+            .as_ref()
+            .file_name()
+            .unwrap()
+            .to_string_lossy()
+    );
+    touch(path)?;
+
+    let mut asset = File::create(&path);
+    let mut cover_image = File::open(cover)?;
+    let mut buffer = String::new();
+    cover_image.read_to_string(&mut buffer)?;
+    asset.write_all(buffer.as_bytes())?;
 
     Ok(())
 }
